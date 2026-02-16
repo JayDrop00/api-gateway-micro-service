@@ -11,6 +11,31 @@ import { JwtStrategy } from './auth/jwt.strategy';
     ConfigModule.forRoot({ isGlobal: true }),
 
     ClientsModule.registerAsync([
+      
+      {
+        name: 'QUEUE_SERVICE',
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: config.get('QUEUE_SERVICE_HOST'),
+            port: config.get<number>('QUEUE_SERVICE_PORT') || 4000,
+          },
+        }),
+      },
+
+      {
+        name: 'SCHEDULE_SERVICE',
+        inject: [ConfigService],
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: config.get('SCHEDULE_SERVICE_HOST'),
+            port: config.get<number>('SCHEDULE_SERVICE_PORT') || 5000,
+          },
+        }),
+      },
+      
       {
         name: 'USER_SERVICE',
         inject: [ConfigService],
@@ -18,10 +43,11 @@ import { JwtStrategy } from './auth/jwt.strategy';
           transport: Transport.TCP,
           options: {
             host: config.get('USER_SERVICE_HOST'),
-            port: config.get<number>('USER_SERVICE_PORT'),
+            port: config.get<number>('USER_SERVICE_PORT') || 3001,
           },
         }),
       },
+
       {
         name: 'TRANSACTION_SERVICE',
         inject: [ConfigService],
@@ -29,7 +55,7 @@ import { JwtStrategy } from './auth/jwt.strategy';
           transport: Transport.TCP,
           options: {
             host: config.get('TRANSACTION_SERVICE_HOST'),
-            port: config.get<number>('TRANSACTION_SERVICE_PORT'),
+            port: config.get<number>('TRANSACTION_SERVICE_PORT') || 3002,
           },
         }),
       },
