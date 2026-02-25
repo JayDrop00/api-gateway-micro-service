@@ -1,72 +1,40 @@
-import { Controller, Post, Get, Body, Req, UseGuards, Inject } from '@nestjs/common';
-import { ClientProxy } from '@nestjs/microservices';
+import { Controller, Post, Get, Body, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { firstValueFrom } from 'rxjs';
+import { ScheduleTransactionDto } from './dto/schedule-transaction.dto';
+import { TransactionService } from './transactions.service';
 
 @Controller('transactions')
 @UseGuards(AuthGuard('jwt'))
 export class TransactionsController {
-  constructor(
-    @Inject('TRANSACTION_SERVICE') private transactionClient: ClientProxy,
-    @Inject('SCHEDULE_SERVICE') private scheduleClient: ClientProxy,
-    @Inject('QUEUE_SERVICE') private queueClient: ClientProxy,
-  ) {}
-
-  // api-gateway/src/transactions/transactions.controller.ts
+  constructor(private readonly transactionService: TransactionService) {}
 
   @Post('schedule')
-  async scheduleTransaction(
-    @Req() req,
-    @Body() body: { amount: number; type: 'DEPOSIT' | 'WITHDRAW'; scheduleAt: string },
-  ) {
-
-    console.log("YWA KA");
-    await this.scheduleClient.connect();
-    console.log("YWA KA 2");
-    return firstValueFrom(
-      this.scheduleClient.send('schedule_transaction', {
-        userId: Number(req.user.userId),
-        amount: body.amount,
-        type: body.type,
-        scheduleAt: body.scheduleAt,
-      }),
-    );
+  async scheduleTransaction(@Req() req, @Body() dto: ScheduleTransactionDto) {
+    const userId = Number(req.user.userId);
+    return this.transactionService.scheduleTransaction(userId, dto);
   }
+
   @Post('deposit')
   async deposit(@Req() req, @Body() body: { amount: number }) {
-    return firstValueFrom(
-      this.queueClient.send('deposit', {
-        userId: req.user.userId,
-        amount: body.amount,
-      }),
-    );
+    const userId = Number(req.user.userId);
+    return this.transactionService.deposit(userId, body.amount);
   }
 
   @Post('withdraw')
   async withdraw(@Req() req, @Body() body: { amount: number }) {
-    return firstValueFrom(
-      this.queueClient.send('withdraw', {
-        userId: req.user.userId,
-        amount: body.amount,
-      }),
-    );
+    const userId = Number(req.user.userId);
+    return this.transactionService.withdraw(userId, body.amount);
   }
 
   @Get('balance')
   async balance(@Req() req) {
-    return firstValueFrom(
-      this.transactionClient.send('balance', {
-        userId: req.user.userId,
-      }),
-    );
+    const userId = Number(req.user.userId);
+    return this.transactionService.balance(userId);
   }
 
   @Get('history')
   async history(@Req() req) {
-    return firstValueFrom(
-      this.transactionClient.send('history', {
-        userId: req.user.userId,
-      }),
-    );
+    const userId = Number(req.user.userId);
+    return this.transactionService.history(userId);
   }
 }

@@ -1,0 +1,19 @@
+# Dockerignore file for API Gateway
+
+# Ignore node modules
+node_modules
+
+# Ignore build output
+dist
+
+# Ignore Git files
+.git
+# Ignore environment variable files
+.env
+
+# Ignore IDE(VSCODE) configuration files
+.idea
+.vscode
+
+# Ignore log files
+*.log 

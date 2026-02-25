@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth/auth.controller';
 import { TransactionsController } from './transactions/transactions.controller';
 import { JwtStrategy } from './auth/jwt.strategy';
+import { TransactionModule } from './transactions/transactions.module';
 
 @Module({
   imports: [
@@ -12,31 +13,8 @@ import { JwtStrategy } from './auth/jwt.strategy';
 
     ClientsModule.registerAsync([
       
-      {
-        name: 'QUEUE_SERVICE',
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.TCP,
-          options: {
-            host: config.get('QUEUE_SERVICE_HOST'),
-            port: config.get<number>('QUEUE_SERVICE_PORT') || 4000,
-          },
-        }),
-      },
-
-      {
-        name: 'SCHEDULE_SERVICE',
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.TCP,
-          options: {
-            host: config.get('SCHEDULE_SERVICE_HOST'),
-            port: config.get<number>('SCHEDULE_SERVICE_PORT') || 5000,
-          },
-        }),
-      },
       
-      {
+       {
         name: 'USER_SERVICE',
         inject: [ConfigService],
         useFactory: (config: ConfigService) => ({
@@ -46,19 +24,7 @@ import { JwtStrategy } from './auth/jwt.strategy';
             port: config.get<number>('USER_SERVICE_PORT') || 3001,
           },
         }),
-      },
-
-      {
-        name: 'TRANSACTION_SERVICE',
-        inject: [ConfigService],
-        useFactory: (config: ConfigService) => ({
-          transport: Transport.TCP,
-          options: {
-            host: config.get('TRANSACTION_SERVICE_HOST'),
-            port: config.get<number>('TRANSACTION_SERVICE_PORT') || 3002,
-          },
-        }),
-      },
+      },  
     ]),
 
     JwtModule.registerAsync({
@@ -68,6 +34,8 @@ import { JwtStrategy } from './auth/jwt.strategy';
         signOptions: { expiresIn: config.get('JWT_EXPIRES') },
       }),
     }),
+
+    TransactionModule,
   ],
   controllers: [AuthController, TransactionsController],
   providers: [JwtStrategy],
