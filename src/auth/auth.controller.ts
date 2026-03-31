@@ -9,17 +9,24 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { LoginDto } from './dto/logIn.dto';
 import { AuthService } from './auth.service';
+import { SetMetadata } from '@nestjs/common';
+
+const SKIP_ENCRYPT = 'skip_encrypt';
+const SkipEncrypt = () => SetMetadata(SKIP_ENCRYPT, true);
+
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @SkipEncrypt()
   register(@Body() body: LoginDto) {
     return this.authService.register(body);
   }
 
   @Post('login')
+  @SkipEncrypt()
   login(@Body() body: LoginDto) {
     return this.authService.login(body);
   }
