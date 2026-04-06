@@ -9,10 +9,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { LoginDto } from './dto/logIn.dto';
 import { AuthService } from './auth.service';
-import { SetMetadata } from '@nestjs/common';
-
-const SKIP_ENCRYPT = 'skip_encrypt';
-const SkipEncrypt = () => SetMetadata(SKIP_ENCRYPT, true);
+import { SetMetadata, Headers } from '@nestjs/common';
 
 
 @Controller('auth')
@@ -20,16 +17,24 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  @SkipEncrypt()
+  
   register(@Body() body: LoginDto) {
     return this.authService.register(body);
   }
 
   @Post('login')
-  @SkipEncrypt()
   login(@Body() body: LoginDto) {
     return this.authService.login(body);
   }
+
+  @Post('test_timestamp')
+  testTimestamp(
+    @Headers('x_client_timestamp') timestamp: number,
+    @Headers('x_client_totp') totp: string,
+  ) {
+    return this.authService.testTimestamp(Number(timestamp), totp);
+  }
+
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
