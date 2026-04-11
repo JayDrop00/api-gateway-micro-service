@@ -61,10 +61,6 @@ export class AuthService {
       return { message: `${x_client_timestamp} is not valid` };
     }
 
-
-  // ── TOTP ─────────────────────────────────────────────────────────────────────
-  // ... rest of your code
-
   // ── TOTP ────────────────────────────────────────────────────────────────────
 
   function base32ToBytes(base32: string): number[] {
@@ -119,7 +115,6 @@ export class AuthService {
     x_server_totp,
     x_client_totp,
     message,
-    
   };
 }
 }
