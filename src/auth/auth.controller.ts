@@ -26,14 +26,7 @@ export class AuthController {
     return this.authService.login(body);
   }
 
-  @Post('test_timestamp')
-  testTimestamp(
-    @Headers('x_client_timestamp') timestamp: number,
-    @Headers('x_client_totp') totp: string,
-  ) {
-    return this.authService.testTimestamp(Number(timestamp), totp);
-  }
-
+  
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')

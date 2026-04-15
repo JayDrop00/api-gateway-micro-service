@@ -3,7 +3,7 @@ import { createDecipheriv } from 'crypto';
 import { randomBytes, createCipheriv } from 'crypto';
 
 @Injectable()
-export class EncryptionService {
+export class EncryptionSecurityService {
 
   private readonly key: Buffer;
 
@@ -18,7 +18,7 @@ export class EncryptionService {
     }
   }
 
-  async RawData(encryptedBase64: string, ivBase64: string): Promise<any> {
+  async DecryptRequest(encryptedBase64: string, ivBase64: string): Promise<any> {
     console.log("ENCRYPTED BASE64:", encryptedBase64);
     console.log("IV BASE64:", ivBase64);
     // 1. Decode Base64 inputs
