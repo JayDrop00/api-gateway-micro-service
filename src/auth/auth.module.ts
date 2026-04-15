@@ -6,10 +6,12 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 
+import e from 'express';
+
 @Module({
   imports: [
     ConfigModule,
-
+    
     ClientsModule.registerAsync([
       {
         name: 'USER_SERVICE',
