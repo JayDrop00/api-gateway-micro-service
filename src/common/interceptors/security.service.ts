@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { createDecipheriv } from 'crypto';
-import { randomBytes, createCipheriv } from 'crypto';
+import { createDecipheriv, randomBytes, createCipheriv} from 'crypto';
+import { Logger } from 'nestjs-pino';
 
 @Injectable()
 export class EncryptionSecurityService {
 
   private readonly key: Buffer;
 
-  constructor() {
+  constructor(private readonly logger: Logger) {
     const keyBase64 = process.env.ENCRYPTION_KEY;
     if (!keyBase64) throw new Error('Missing env variable: ENCRYPTION_KEY');
 
@@ -19,35 +19,40 @@ export class EncryptionSecurityService {
   }
 
   async DecryptRequest(encryptedBase64: string, ivBase64: string): Promise<any> {
-    console.log("ENCRYPTED BASE64:", encryptedBase64);
-    console.log("IV BASE64:", ivBase64);
-    // 1. Decode Base64 inputs
+    this.logger.debug({ encryptedBase64 }, 'Decrypting request payload');
+    this.logger.debug({ ivBase64 }, 'Using IV');
 
     const encryptedBuffer = Buffer.from(encryptedBase64, 'base64');
     const iv = Buffer.from(ivBase64, 'base64');
 
-    // 2. AES-256-GCM: last 16 bytes are the auth tag
     const authTag = encryptedBuffer.subarray(encryptedBuffer.length - 16);
     const ciphertext = encryptedBuffer.subarray(0, encryptedBuffer.length - 16);
 
-    // 3. Decrypt
-    const decipher = createDecipheriv('aes-256-gcm', this.key, iv);
-    decipher.setAuthTag(authTag);
+    try {
+      const decipher = createDecipheriv('aes-256-gcm', this.key, iv);
+      decipher.setAuthTag(authTag);
 
-    const decrypted = Buffer.concat([
-      decipher.update(ciphertext),
-      decipher.final(),
-    ]);
+      const decrypted = Buffer.concat([
+        decipher.update(ciphertext),
+        decipher.final(),
+      ]);
 
-    // 4. Parse and return
-    return JSON.parse(decrypted.toString('utf8'));
+      const result = JSON.parse(decrypted.toString('utf8'));
+
+      this.logger.debug({ result }, 'Decryption successful');
+
+      return result;
+    } catch (error) {
+      this.logger.error(
+        { err: error, encryptedBase64, ivBase64 },
+        'Decryption failed',
+      );
+      throw error;
+    }
   }
 
   async encryptResponse(payload: any): Promise<{ data: string; iv: string }> {
-    // 1. Generate IV (12 bytes for GCM is standard)
     const iv = randomBytes(12);
-
-    // 2. Create cipher
     const cipher = createCipheriv('aes-256-gcm', this.key, iv);
 
     const json = JSON.stringify(payload);
@@ -57,10 +62,7 @@ export class EncryptionSecurityService {
       cipher.final(),
     ]);
 
-    // 3. Get auth tag
     const authTag = cipher.getAuthTag();
-
-    // 4. Combine ciphertext + authTag
     const finalBuffer = Buffer.concat([encrypted, authTag]);
 
     const result = {
@@ -68,9 +70,9 @@ export class EncryptionSecurityService {
       iv: iv.toString('base64'),
     };
 
-    // 🔥 IMPORTANT: log before sending
-    console.log("ENCRYPTED RESPONSE:", result);
+    this.logger.debug({ payload }, 'Encrypting response payload');
+    this.logger.debug({ result }, 'Encrypted response generated');
 
     return result;
-  }  
+  }
 }

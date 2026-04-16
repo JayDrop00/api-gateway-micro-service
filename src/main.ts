@@ -9,7 +9,7 @@ import { Logger } from 'nestjs-pino';
 config();
 async function bootstrap() {
   // ✅ ensure logs folder exists (same as other services)
-  const logsPath = path.join(__dirname, '..', '..', 'logs');
+  const logsPath = path.join(process.cwd(), '..', 'logs');
   if (!fs.existsSync(logsPath)) {
     fs.mkdirSync(logsPath, { recursive: true });
   }

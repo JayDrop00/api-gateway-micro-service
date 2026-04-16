@@ -27,7 +27,7 @@ import { SecurityModule } from './common/interceptors/security.module';
             {
               target: 'pino/file',
               options: {
-                destination: path.join(process.cwd(), 'logs', 'api-gateway.log'),
+                destination: path.join(process.cwd(), '..', 'logs', 'api-gateway.log'),
                 mkdir: true,
               },
             },
